@@ -24,7 +24,7 @@ void generate_chunk(
 	pcg32 &RNG,
 	const unsigned int start,
 	const unsigned int chunk_size,
-	std::normal_distribution<> &dist,
+	std::exponential_distribution<> &dist,
 	const unsigned int shift,
 	std::vector<double> &RESULT
 )
@@ -34,17 +34,17 @@ void generate_chunk(
 	unsigned int end = start + chunk_size;
 
 	for (unsigned int i = start; i < end; ++i) {			//Filling the vector
-		RESULT[i] = dist(RNG);
+		RESULT[i] = dist(RNG_copy);
 	}
 
 	RNG_copy.advance(shift);								//Jump ahead
-	RNG = RNG_copy;
+	//RNG = RNG_copy;
 
 }
 
 std::vector<double> generate_vector_parallel(
 	pcg32 &RNG,
-	std::normal_distribution<> &dist,
+	std::exponential_distribution<> &dist,
 	const unsigned int length,
 	const unsigned int thread_count
 ) {
@@ -86,7 +86,7 @@ std::vector<double> generate_vector_parallel(
 
 std::vector<double> generate_vector(
 	pcg32 &RNG,
-	std::normal_distribution<> &dist,
+	std::exponential_distribution<> &dist,
 	const unsigned int length,
 	const unsigned int parts
 	)
@@ -233,7 +233,7 @@ bool are_vectors_identical(
 	}
 	unsigned int length = vec1.size();
 	for (unsigned int i = 0; i < length; ++i) {			//Filling the vector
-		if (abs(vec1[i] - vec2[i]) > EPS) {
+		if (vec1[i] != vec2[i]) {
 			std::cout << std::to_string(i);
 			return false;
 		}
@@ -243,7 +243,7 @@ bool are_vectors_identical(
 
 int main()
 {
-	std::normal_distribution<> normal_dist(0, 1);
+	std::exponential_distribution<> normal_dist(1);
 	pcg32 RNG(SEED);
 	pcg32 RNG2(SEED);
 	std::cout << "               _    _       _    _                             _  ___    _   _  ___ " << std::endl;
@@ -253,7 +253,7 @@ int main()
 	std::cout << "| | | || (_) | | | | |_ | || |_ | | | || |  (  ___/( (_| |( (_| || |\\ \\ | |`\\ || (_, )" << std::endl;
 	std::cout << "(_) (_)`\\___/'(___)`\\__)(_)`\\__)(_) (_)(_)  `\\____)`\\__,_)`\\__,_)(_) (_)(_) (_)(____/'" << std::endl << std::endl;
 
-	unsigned int N = 10000000;
+	unsigned int N = 1000000;
 	std::cout << "Generation of vector of length: "<<std::to_string(N) << " from a normal distribution"<< std::endl;
 	std::cout << "Parralel vector generation..." << std::endl;
 	auto start = std::chrono::steady_clock::now();
@@ -263,7 +263,7 @@ int main()
 	std::cout << "COMPLETED" << std::endl;
 	std::cout << "NONparralel vector generation..." << std::endl;
 	start = std::chrono::steady_clock::now();
-	RNG2;
+	//RNG2;
 	std::vector<double> nonparallel = generate_vector(RNG2, normal_dist, N, 4);
 	end = std::chrono::steady_clock::now();
 	std::cout << "that took " << std::chrono::duration<double>(end - start).count()<<" s" << std::endl;
